@@ -1,14 +1,10 @@
-# 外部保活工作流（部署到 GitHub 仓库的 .github/workflows/keepalive.yml）
-# 作用：每 5 分钟从 GitHub 云端定时访问你的面板外部地址，
-#       让 WorkBuddy 平台认为工作空间一直有活动 → 不自动休眠 → 机器人 24h 在线。
-# 注意：URL 已填好你的真实面板地址（豆包提供，已验证 HTTP 200）。
-
+# 外部保活工作流（错开 0 分钟，5 个叠加 = 每 1 分钟 ping 一次）
 name: keepalive
 
 on:
   schedule:
-    - cron: '*/5 * * * *'     # 每 5 分钟一次（GitHub 免费额度足够）
-  workflow_dispatch:          # 允许在 Actions 页面手动点 "Run workflow" 测试
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
 
 jobs:
   ping:
@@ -18,6 +14,5 @@ jobs:
       - name: Ping panel to prevent sandbox auto-sleep
         run: |
           URL="https://a75246df213e6fed3.app.workbuddy.host"
-          echo "保活 ping -> $URL"
           curl -sS -m 20 -o /dev/null -w "首页=%{http_code}\n" "$URL"
           curl -sS -m 20 -o /dev/null -w "beat=%{http_code}\n" -X POST "$URL/api/watchdog/beat"
